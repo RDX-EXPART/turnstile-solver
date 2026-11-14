@@ -1,0 +1,7 @@
+cat << 'EOF' > heroku.yml
+build:
+  docker:
+    web: Dockerfile
+run:
+  web: /usr/bin/dumb-init -- ./entrypoint.sh
+EOF
