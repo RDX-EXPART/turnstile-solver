@@ -1,16 +1,15 @@
+cat << 'EOF' > Dockerfile
 FROM python:3.13-slim-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONWARNINGS=ignore \
-    MAX_WORKERS=8 \
+    MAX_WORKERS=2 \
     PORT=9988 \
-    HEADLESS=false
+    HEADLESS=false \
+    XDG_CACHE_HOME=/opt/camoufox-cache \
+    DB_PATH=/tmp/solver.db
 
-# System deps for headed Camoufox/Firefox under Xvfb. Real CF widgets
-# refuse to render on --headless=new builds (HeadlessChrome UA, missing
-# GPU/audio signals); running headed under Xvfb keeps the fingerprint
-# clean. Camoufox bundles its own Firefox via `python -m camoufox fetch`.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         xvfb \
         dumb-init \
@@ -41,15 +40,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Ensure cache directory exists and is world-writable for non-root runtime users
+RUN mkdir -p /opt/camoufox-cache /tmp/ts_profile /tmp/solver \
+    && chmod -R 777 /opt/camoufox-cache /tmp/ts_profile /tmp/solver
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && python -m camoufox fetch
+    && python -m camoufox fetch \
+    && chmod -R 777 /opt/camoufox-cache
 
 COPY app ./app
 COPY web ./web
 COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.sh && chmod -R 777 /app
 
 EXPOSE 9988
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "./entrypoint.sh"]
+EOF
