@@ -1,7 +1,5 @@
+cat << 'EOF' > entrypoint.sh
 #!/bin/bash
-# Default to headed Camoufox (Firefox) under Xvfb. Real Cloudflare
-# deployments fingerprint headless builds and refuse to mount the Turnstile
-# iframe. Running under a virtual X server lets the widget render.
 set -e
 
 if [ -z "$DISPLAY" ]; then
@@ -10,4 +8,13 @@ if [ -z "$DISPLAY" ]; then
     sleep 0.5
 fi
 
+# Ensure XDG_CACHE_HOME is exported for non-root user
+export XDG_CACHE_HOME=/opt/camoufox-cache
+
+# Fallback symlinks
+mkdir -p "$HOME/.cache" 2>/dev/null || true
+ln -sf /opt/camoufox-cache/camoufox "$HOME/.cache/camoufox" 2>/dev/null || true
+mkdir -p "$HOME/.camoufox" 2>/dev/null || true
+
 exec python3 -m app
+EOF
