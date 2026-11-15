@@ -40,7 +40,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Ensure cache directory exists and is world-writable for non-root runtime users
 RUN mkdir -p /opt/camoufox-cache /tmp/ts_profile /tmp/solver \
     && chmod -R 777 /opt/camoufox-cache /tmp/ts_profile /tmp/solver
 
