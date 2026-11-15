@@ -1,4 +1,3 @@
-cat << 'EOF' > Dockerfile
 FROM python:3.13-slim-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -40,6 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Ensure cache directory exists and is world-writable for non-root runtime users
 RUN mkdir -p /opt/camoufox-cache /tmp/ts_profile /tmp/solver \
     && chmod -R 777 /opt/camoufox-cache /tmp/ts_profile /tmp/solver
 
@@ -56,4 +56,3 @@ RUN chmod +x entrypoint.sh && chmod -R 777 /app
 EXPOSE 9988
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "./entrypoint.sh"]
-EOF
